@@ -1,0 +1,576 @@
+{% comment %}
+  This section allows you to create a Product Grid when user click on any Product Modal is open with its Details
+{% endcomment %}
+
+<!-- Products GRID Section -->
+ 
+<section class="product-grid-section">
+  <div class="grid-container">
+    {% for block in section.blocks %}
+      {% if block.settings.product != blank %}
+        {% assign product = all_products[block.settings.product] %}
+        {% if product %}
+          <div class="product-block">
+            {% if product.featured_image %}
+              <img src="{{ product.featured_image | img_url: '600x600' }}" 
+                   alt="{{ product.title | escape }}" loading="lazy" />
+            {% else %}
+              <div class="no-image">No Image</div>
+            {% endif %}
+            <button 
+              class="open-modal" 
+              style="top: {{ block.settings.plus_button_y }}%; left: {{ block.settings.plus_button_x }}%;"
+              data-title="{{ product.title | escape }}"
+              data-image="{% if product.featured_image %}{{ product.featured_image | img_url: '600x600' }}{% endif %}"
+              data-description="{{ product.description | strip_html | escape }}"
+              data-variants='{{ product.variants | json }}'
+              data-options='{{ product.options | json }}'
+            >+</button>
+          </div>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Modal Popup Markup -->
+<div id="modal-overlay" class="modal-overlay">
+  <div id="product-modal" class="modal">
+    <span id="modal-close" class="modal-close">&times;</span>
+    <div class="modal-content">
+      <div class="modal-body-flex">
+        <div class="modal-left">
+          <img id="modal-product-image" src="" alt="" class="modal-image" />
+        </div>
+        <div class="modal-right">
+          <h2 id="modal-product-title"></h2>
+          <p id="modal-product-description"></p>
+        </div>
+      </div>
+      <div id="variant-selectors"></div>
+      <form id="modal-add-to-cart-form">
+         <button type="submit" id="modal-add-to-cart-button">ADD TO CART →</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="toast-notification" class="toast-notification"></div>
+
+<style>
+  .product-grid-section { 
+    padding: 20px 0; 
+}
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 10px;
+  }
+  @media screen and (max-width: 767px) {
+    .grid-container { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media screen and (max-width: 480px) {
+    .grid-container { grid-template-columns: 1fr; }
+  }
+  .product-block {
+    position: relative;
+    padding: 4px;
+    text-align: center;
+  }
+  .product-block img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+ .open-modal {
+    position: absolute;
+    background-color: rgba(248, 248, 248, 0.9);
+    border: none;
+    color: black;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    border-radius: 50%;
+  }
+
+  .open-modal:hover {
+    background-color: rgba(248, 248, 248, 0.7);
+    transform: scale(1.05);
+  }
+  
+  /* MODAL POPUP STYLES*/
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+  }
+  .modal-overlay.active {
+    display: flex;
+  }
+  .modal {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    padding: 25px;
+    width: 90%;
+    max-width: 560px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    position: relative;
+  }
+  .modal-close {
+    position: absolute;
+    top: 10px; right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+  }
+  .modal-body-flex {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    align-items: stretch;
+    margin-bottom: 20px;
+  }
+  .modal-left { 
+    flex: 1; 
+  display: flex;
+  justify-content: center; 
+}
+  .modal-right { flex: 2; display: flex; flex-direction: column; }
+  .modal-image {
+    width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  @media screen and (max-width: 480px) {
+    .modal-image{
+        aspect-ratio: 1 / 2;
+        max-height: 300px;
+
+    }
+    
+  }
+  .modal h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 10px 0 5px;
+  }
+  .modal p {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 15px;
+  }
+  
+  /*   VARIANT SELECTORS*/
+    #variant-selectors {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+  #variant-selectors .option-group {
+    margin-bottom: 20px;
+  }
+  #variant-selectors label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 0.9rem;
+  }
+  /* Dropdown style for size */
+  #variant-selectors select {
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+    border-radius: 4px;
+    border: 1px solid #333;
+    appearance: none;
+    background: url('data:image/svg+xml;utf8,<svg fill="%23333" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 12px center;
+    background-color: #fff;
+    background-size: 18px 18px;
+  }
+  /* Color options as a button group */
+  #variant-selectors .custom-options {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 5px;
+  }
+  #variant-selectors .custom-option {
+    display: flex;
+    align-items: center;
+   
+    border: 1px solid #333;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    user-select: none;
+    font-size: 14px;
+    background: #fff;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+ /* Style for selected custom option */
+#variant-selectors .custom-option.selected {
+  background-color: #000;
+  color: #fff;
+}
+
+/* Style for the swatch */
+#variant-selectors .custom-option .color-swatch {
+  display: inline-block;
+  width: 9px;
+  height: 36px;
+  border-radius: 3px;
+  margin-right: 5px;
+  border-right: 1px solid black;
+}
+
+/* Style for the color label */
+#variant-selectors .custom-option .color-label {
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  color: inherit;
+}
+
+/* Optional: Style for the custom-options container */
+#variant-selectors .custom-options {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 5px;
+}
+
+/* Optional: Style for the option group wrapper */
+#variant-selectors .option-group {
+  margin-bottom: 20px;
+}
+
+#variant-selectors .option-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+  /* -----------------------
+     ADD TO CART FORM
+  ------------------------- */
+  #modal-add-to-cart-form {
+    width: 100%;
+  }
+  #modal-add-to-cart-form label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+  }
+  #modal-add-to-cart-form input[type="number"] {
+    width: 80px;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  #modal-add-to-cart-button {
+    background: #000;
+    color: #fff;
+    font-size: 16px;
+    padding: 14px;
+    border: none;
+    width: 100%;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s ease;
+  }
+  #modal-add-to-cart-button:hover {
+    background: #222;
+  }
+  
+  /* -----------------------
+     TOAST NOTIFICATION
+  ------------------------- */
+  .toast-notification {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #28a745;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+    z-index: 1100;
+  }
+
+  @media screen and (max-width: 480px) {
+    .toast-notification {
+      bottom: 50px;
+    }
+    
+  }
+  .toast-notification.active { opacity: 1; }
+</style>
+
+<script>
+  // Global variables to hold variant data for the current modal product.
+  let modalVariants = [];
+  let modalOptions = [];
+  
+  function getUniqueValues(variants, optionIndex) {
+    const values = [];
+    variants.forEach(variant => {
+      const value = variant['option' + (optionIndex + 1)];
+      if (!values.includes(value)) values.push(value);
+    });
+    return values;
+  }
+  
+  // Function to open the modal and populate product data and variant selectors.
+  function openModal(button) {
+    const title = button.dataset.title;
+    const imageSrc = button.dataset.image;
+    const description = button.dataset.description;
+    
+    document.getElementById('modal-product-title').textContent = title;
+    document.getElementById('modal-product-description').textContent = description;
+    
+    if (imageSrc) {
+      document.getElementById('modal-product-image').src = imageSrc;
+      document.getElementById('modal-product-image').alt = title;
+    } else {
+      document.getElementById('modal-product-image').src = '';
+      document.getElementById('modal-product-image').alt = '';
+    }
+    
+    
+    try {
+      modalVariants = JSON.parse(button.dataset.variants);
+      modalOptions = JSON.parse(button.dataset.options);
+    } catch (e) {
+      console.error("Error parsing product variant data:", e);
+      modalVariants = [];
+      modalOptions = [];
+    }
+    
+    // For example, if options are "color" and "size":
+    modalOptions.sort(function(a, b) {
+      const order = ['size', 'color'];
+      return order.indexOf(a.toLowerCase()) - order.indexOf(b.toLowerCase());
+    });
+  
+    const selectorsContainer = document.getElementById('variant-selectors');
+    selectorsContainer.innerHTML = '';
+    //  Render options UI.
+
+
+modalOptions.forEach(function(optionName, index) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'option-group';
+
+  const label = document.createElement('label');
+  label.textContent = optionName;
+  wrapper.appendChild(label);
+
+  const values = getUniqueValues(modalVariants, index);
+
+  if (optionName.toLowerCase() === 'color') {
+    // Render a custom button group for Color options with a swatch on the left.
+    const buttonGroup = document.createElement('div');
+    buttonGroup.className = 'custom-options';
+
+    values.forEach(function(value) {
+      const btn = document.createElement('div');
+      btn.className = 'custom-option';
+      btn.dataset.value = value;
+      btn.dataset.optionIndex = index;
+
+      // Create the swatch element.
+      const swatch = document.createElement('span');
+      swatch.className = 'color-swatch';
+      swatch.style.backgroundColor = value.toLowerCase();
+
+      // Create a label element for the color.
+      const colorLabel = document.createElement('span');
+      colorLabel.className = 'color-label';
+      colorLabel.textContent = value;
+
+      btn.appendChild(swatch);
+      btn.appendChild(colorLabel);
+
+      btn.addEventListener('click', function () {
+        // Remove 'selected' class from all buttons in the same group.
+        buttonGroup.querySelectorAll('.custom-option').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+      });
+
+      buttonGroup.appendChild(btn);
+    });
+
+    wrapper.appendChild(buttonGroup);
+  } else if (optionName.toLowerCase() === 'size') {
+    // Render a dropdown for Size.
+    const select = document.createElement('select');
+    select.id = 'variant-option-' + index;
+    select.dataset.optionIndex = index;
+
+    const defaultOpt = document.createElement('option');
+    defaultOpt.textContent = 'Choose your size';
+    defaultOpt.disabled = true;
+    defaultOpt.selected = true;
+    select.appendChild(defaultOpt);
+
+    values.forEach(function(value) {
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = value;
+      select.appendChild(opt);
+    });
+
+    wrapper.appendChild(select);
+  }
+
+  selectorsContainer.appendChild(wrapper);
+});
+
+    
+    // Show the modal.
+    document.getElementById('modal-overlay').classList.add('active');
+  }
+  
+  // Function to close the modal.
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('active');
+  }
+  
+  // Function to show a toast notification.
+  function showToast(message) {
+    const toast = document.getElementById('toast-notification');
+    toast.textContent = message;
+    toast.classList.add('active');
+    setTimeout(() => { toast.classList.remove('active'); }, 3000);
+  }
+  
+  // Attach click listeners to all plus buttons.
+  document.querySelectorAll('.open-modal').forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      openModal(this);
+    });
+  });
+  
+  // Listeners for closing the modal.
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  document.getElementById('modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+  
+  // AJAX Add-to-Cart with variant matching.
+  document.getElementById('modal-add-to-cart-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const selectedOptions = [];
+    
+    modalOptions.forEach(function(optionName, index) {
+      if (optionName.toLowerCase() === 'color') {
+        const selectedBtn = document.querySelector(`.custom-option[data-option-index="${index}"].selected`);
+        if (selectedBtn) selectedOptions.push(selectedBtn.dataset.value);
+      } else {
+        const select = document.getElementById('variant-option-' + index);
+        if (select) selectedOptions.push(select.value);
+      }
+    });
+    
+    const selectedVariant = modalVariants.find(function(variant) {
+      return modalOptions.every(function(option, index) {
+        return variant['option' + (index + 1)] === selectedOptions[index];
+      });
+    });
+    
+    if (!selectedVariant) {
+      console.error("No matching selectedVariant found for options:", selectedVariant);
+      return;
+    }
+    
+    const payload = {
+      id: selectedVariant.id,
+      quantity: 1
+    };
+    
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(response => {
+      if (!response.ok) { throw new Error('Error adding to cart'); }
+      return response.json();
+    })
+    .then(data => {
+      showToast("Product added to cart");
+      closeModal();
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('There was an error adding the product to the cart.');
+    });
+  });
+</script>
+
+
+{% schema %}
+{
+  "name": "Custom Product Grid",
+  "settings": [],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Product Block",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Select Product"
+        },
+        {
+          "type": "range",
+          "id": "plus_button_x",
+          "label": "Plus Button X Position (%)",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 70
+        },
+        {
+          "type": "range",
+          "id": "plus_button_y",
+          "label": "Plus Button Y Position (%)",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 25
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom Product Grid",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}
+
+
+
+
+

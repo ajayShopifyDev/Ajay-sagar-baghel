@@ -1,0 +1,283 @@
+ {%- assign bg_image = section.settings.bg_image -%}
+
+ <div class="top-heading">
+ <div class="brand-title">{{ section.settings.brand_title }}</div>
+  <div class="tagline">{{ section.settings.tagline }}</div>
+  <div class="choose-gift-button">
+    <a href="{{ section.settings.choose_gift_url }}">{{ section.settings.choose_gift_text }}</a>
+  </div>
+ </div>
+  <div class="container">
+    <div class="main-heading-mobile">{{ section.settings.main_heading }}</div>
+    <div class="description-mobile">{{ section.settings.description }}</div>
+  </div>
+
+<div class="gift-guide-banner" style="background-image: url('{{ bg_image | img_url: 'master' }}');">
+ 
+  <div class="container ">
+    <div class="main-heading-desktop ">{{ section.settings.main_heading }}</div>
+    <div class="description-desktop">{{ section.settings.description }}</div>
+    <div class="shop-now-button mobile-button">
+      <a href="{{ section.settings.shop_now_url }}">{{ section.settings.shop_now_text }}</a>
+    </div>
+  </div>
+
+</div>
+<div class="footer-text">
+  <span >{{ section.settings.footer_text }}</span>
+</div>
+
+<style>
+    .top-heading{
+    position: relative;
+    width: 100%;
+    height: 78px;
+    background-size: cover;
+    background-position: center;
+
+    }
+  
+  .gift-guide-banner {
+    position: relative;
+    width: 100%;
+    height: 878px;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .brand-title {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: black;
+  }
+
+  .tagline {
+    position: absolute;
+   top: 25px;
+    left: 35%;
+    font-size: 18px;
+    color: black;
+  }
+
+  .choose-gift-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+  }
+
+  .choose-gift-button a {
+    background-color: #FFD700; 
+    color: black;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+
+  .choose-gift-button a::after {
+    content: '→';
+    margin-left: 10px;
+  }
+
+  .choose-gift-button a:hover {
+    background-color: #FFC700;
+    transform: scale(1.05);
+  }
+
+  .container {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50%;
+  }
+
+  .main-heading-desktop ,.main-heading-mobile {
+    font-size: 48px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: black;
+    margin-bottom: 20px;
+  }
+
+  .description-desktop ,.description-mobile {
+    font-size: 18px;
+    color: black;
+    margin-bottom: 20px;
+  }
+
+  .shop-now-button {
+    margin-bottom: 20px;
+  }
+
+  .shop-now-button a {
+    background-color: black;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+
+  .shop-now-button a::after {
+    content: '→';
+    margin-left: 10px;
+  }
+
+  .shop-now-button a:hover {
+    background-color: #333;
+    transform: scale(1.05);
+  }
+
+  .footer-text {
+    display: flex;
+    width: 100%;
+    margin-top: 2px;
+    justify-content: center;
+    width: 100%;
+    background-color:#f5f5f5;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: black;
+  }
+
+ 
+    
+  @media (max-width: 767px) {
+    .container .desktop {
+         display: none;
+    }
+
+    .top-heading{
+        display: none;
+    }
+    .main-heading-mobile {
+        font-size: 30px;
+        margin-bottom: 0px;
+    }
+
+    .gift-guide-banner {
+      height: 300px;
+      padding: 20px;
+    }
+
+    .brand-title,
+    .tagline,
+    .choose-gift-button,
+    .container,
+    .footer-text {
+      position: static;
+      transform: none;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .tagline {
+    position: absolute;
+     top: 60px;
+    left: 20px;
+}
+
+
+    .container {
+      width: 100%;
+    }
+
+    .shop-now-button a {
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    .mobile-button{
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        left: 30%;
+        bottom: 0px;
+    }
+    .main-heading-desktop,.description-desktop {
+        display:none;
+    }
+
+    .footer-text{ 
+        padding: 5px 0px;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Gift Guide Banner",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "bg_image",
+      "label": "Background Image"
+    },
+    {
+      "type": "text",
+      "id": "brand_title",
+      "label": "Brand Title",
+      "default": "TISSO VISON"
+    },
+    {
+      "type": "text",
+      "id": "tagline",
+      "label": "Tagline",
+      "default": "Find the ideal gift for your loved ones."
+    },
+    {
+      "type": "text",
+      "id": "main_heading",
+      "label": "Main Heading",
+      "default": "The Gift Guide"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description",
+      "default": "Discover Joy: Your Ultimate Holiday Gift Destination. Explore our curated selection and find the perfect gifts to delight your loved ones this holiday season."
+    },
+    {
+      "type": "text",
+      "id": "choose_gift_text",
+      "label": "Choose Gift Button Text",
+      "default": "CHOOSE GIFT"
+    },
+    {
+      "type": "url",
+      "id": "choose_gift_url",
+      "label": "Choose Gift Button URL"
+    },
+    {
+      "type": "text",
+      "id": "shop_now_text",
+      "label": "Shop Now Button Text",
+      "default": "SHOP NOW"
+    },
+    {
+      "type": "url",
+      "id": "shop_now_url",
+      "label": "Shop Now Button URL"
+    },
+    {
+      "type": "text",
+      "id": "footer_text",
+      "label": "Footer Text",
+      "default": "SUSTAINABLE, ETHICALLY MADE CLOTHES - SIZES XS TO 6XL"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Gift Guide Banner",
+      "category": "Banner"
+    }
+  ]
+}
+{% endschema %}
